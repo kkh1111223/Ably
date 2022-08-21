@@ -4,7 +4,7 @@ from rest_framework.response import Response
 
 from ably_auth.models import phone_auth_model
 from ably_auth.serializers import phone_auth_serializer
-from ably_auth.utils import phone_auth_biz
+from ably_auth.biz import phone_auth_biz
 
 
 class PhoneAuthViewSet(viewsets.GenericViewSet,
