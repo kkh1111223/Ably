@@ -8,13 +8,11 @@ from ably_auth.utils import phone_auth_utils
 
 
 class PhoneAuthViewSet(viewsets.GenericViewSet,
-                       mixins.CreateModelMixin,
-                       mixins.ListModelMixin):
+                       mixins.CreateModelMixin):
     queryset = phone_auth_model.PhoneAuth
     serializer_class = phone_auth_serializer.PhoneAuthSerializer
-
-    def list(self, request, *args, **kwargs):
-        return Response({}, status=status.HTTP_200_OK)
+    authentication_classes = []
+    permission_classes = []
 
     def create(self, request, *args, **kwargs):
         is_data_valid, msg = phone_auth_utils.check_create_request_data(request)
