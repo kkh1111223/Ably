@@ -58,7 +58,7 @@ class PhoneAuthViewTestClass(TestCase):
         self.phone_auth_fail.save()
         response = c.post('/auth/phone_auth/1/verify', {"verification_code": "000000"})
         self.assertEqual(response.status_code, 400)
-        self.assertEqual(response.json()['msg'], i18n['resp_msg']['expired_verification_code'])
+        self.assertEqual(response.json()['msg'], i18n['resp_msg']['invalid_verification'])
 
     def test_verify_success(self):
         c = Client()
@@ -71,4 +71,4 @@ class PhoneAuthViewTestClass(TestCase):
         verification_code = self.phone_auth_revoked.verification_code
         response = c.post('/auth/phone_auth/3/verify', {"verification_code": verification_code})
         self.assertEqual(response.status_code, 400)
-        self.assertEqual(response.json()['msg'], i18n['resp_msg']['expired_verification_code'])
+        self.assertEqual(response.json()['msg'], i18n['resp_msg']['invalid_verification'])
