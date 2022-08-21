@@ -24,11 +24,22 @@ class PhoneAuthViewSet(viewsets.GenericViewSet,
 
         serialized_data = phone_auth_utils.create_phone_authentication(request, self.get_serializer())
         return Response({"status": "success",
-                         "otp_id": serialized_data['id'],
+                         "verification_id": serialized_data['id'],
                          "verification_code": serialized_data['verification_code']},
                         status=status.HTTP_201_CREATED)
 
     @action(methods=['post'], detail=True, url_path='validate', url_name='validate')
-    def verify_code(self, request, pk=None, *args, **kwargs):
-        return Response({"result": "yes"},
+    def verify_code(self, request, pk=None):
+        instance = self.get_object()
+        is_data_valid, msg = phone_auth_utils.check_verify_request_data(request)
+        if not is_data_valid:
+            return Response({"status": "fail", "msg": msg},
+                            status=status.HTTP_400_BAD_REQUEST)
+
+        verified, msg = phone_auth_utils.verify_phone_authentication(request, instance)
+        if not verified:
+            return Response({"status": "fail", "msg": msg},
+                            status=status.HTTP_400_BAD_REQUEST)
+
+        return Response({"status": "success"},
                         status=status.HTTP_200_OK)
