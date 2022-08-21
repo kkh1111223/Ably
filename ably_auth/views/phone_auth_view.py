@@ -17,9 +17,10 @@ class PhoneAuthViewSet(viewsets.GenericViewSet,
         return Response(status=status.HTTP_200_OK)
 
     def create(self, request, *args, **kwargs):
-        is_valid, msg = phone_auth_utils.check_create_request_data(request)
-        if not is_valid:
-            return Response(status=status.HTTP_400_BAD_REQUEST)
+        is_data_valid, msg = phone_auth_utils.check_create_request_data(request)
+        if not is_data_valid:
+            return Response({"status": "FAIL", "msg": msg},
+                            status=status.HTTP_400_BAD_REQUEST)
 
         code = phone_auth_utils.create_phone_auth(request, self.get_serializer())
 
