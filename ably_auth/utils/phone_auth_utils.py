@@ -51,12 +51,16 @@ def check_verify_request_data(request: Request) -> (bool, str):
 
 def verify_phone_authentication(request: Request, phone_auth_instance: Type[PhoneAuthType]) -> (bool, str):
     verification_code = request.data['verification_code']
-    if phone_auth_instance.trial == 0:
+    if phone_auth_instance.trial == 0 or phone_auth_instance.revoked is True:
         return False, i18n['resp_msg']['expired_verification_code']
 
     if verification_code == phone_auth_instance.verification_code:
+        phone_auth_instance.revoked = True
+        phone_auth_instance.save()
         return True, ""
     else:
-        phone_auth_instance.trial = phone_auth_instance.trial - 1
+        left_trial = phone_auth_instance.trial - 1
+        phone_auth_instance.trial = left_trial
+        phone_auth_instance.revoked = True if left_trial == 0 else False
         phone_auth_instance.save()
         return False, i18n['resp_msg']['wrong_verification_code']

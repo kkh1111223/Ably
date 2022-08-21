@@ -13,6 +13,9 @@ class PhoneAuthViewTestClass(TestCase):
                                                                         verification_code="123456")
         cls.phone_auth_success = phone_auth_model.PhoneAuth.objects.create(phone_number="01043214321",
                                                                            verification_code="654321")
+        cls.phone_auth_revoked = phone_auth_model.PhoneAuth.objects.create(phone_number="01043214321",
+                                                                           verification_code="654321",
+                                                                           revoked=1)
 
     def test_create_omit_mandatory_data(self):
         c = Client()
@@ -65,7 +68,7 @@ class PhoneAuthViewTestClass(TestCase):
 
     def test_verify_revoked_verification(self):
         c = Client()
-        verification_code = self.phone_auth_success.verification_code
-        response = c.post('/auth/phone_auth/2/verify', {"verification_code": verification_code})
+        verification_code = self.phone_auth_revoked.verification_code
+        response = c.post('/auth/phone_auth/3/verify', {"verification_code": verification_code})
         self.assertEqual(response.status_code, 400)
         self.assertEqual(response.json()['msg'], i18n['resp_msg']['expired_verification_code'])

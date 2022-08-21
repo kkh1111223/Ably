@@ -28,7 +28,7 @@ class PhoneAuthViewSet(viewsets.GenericViewSet,
                          "verification_code": serialized_data['verification_code']},
                         status=status.HTTP_201_CREATED)
 
-    @action(methods=['post'], detail=True, url_path='validate', url_name='validate')
+    @action(methods=['post'], detail=True, url_path='verify', url_name='verify')
     def verify_code(self, request, pk=None):
         instance = self.get_object()
         is_data_valid, msg = phone_auth_utils.check_verify_request_data(request)
