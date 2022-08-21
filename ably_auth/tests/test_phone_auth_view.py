@@ -1,3 +1,5 @@
+from datetime import datetime, timedelta, timezone
+
 from django.conf import settings
 from django.test import TestCase, Client
 
@@ -16,6 +18,10 @@ class PhoneAuthViewTestClass(TestCase):
         cls.phone_auth_revoked = phone_auth_model.PhoneAuth.objects.create(phone_number="01043214321",
                                                                            verification_code="654321",
                                                                            revoked=1)
+        cls.phone_auth_expired = phone_auth_model.PhoneAuth.objects.create(phone_number="01043214321",
+                                                                           verification_code="654321",
+                                                                           created_time=datetime.now(tz=timezone.utc)
+                                                                                        - timedelta(minutes=3))
 
     def test_create_omit_mandatory_data(self):
         c = Client()
@@ -52,7 +58,7 @@ class PhoneAuthViewTestClass(TestCase):
             self.assertEqual(response.status_code, 400)
             self.assertEqual(response.json()['msg'], i18n['resp_msg']['wrong_verification_code'])
 
-    def test_verify_expire_verification(self):
+    def test_verify_no_trial_verification(self):
         c = Client()
         self.phone_auth_fail.trial = 0
         self.phone_auth_fail.save()
@@ -69,6 +75,13 @@ class PhoneAuthViewTestClass(TestCase):
     def test_verify_revoked_verification(self):
         c = Client()
         verification_code = self.phone_auth_revoked.verification_code
+        response = c.post('/auth/phone_auth/3/verify', {"verification_code": verification_code})
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.json()['msg'], i18n['resp_msg']['invalid_verification'])
+
+    def test_verify_expired_verification(self):
+        c = Client()
+        verification_code = self.phone_auth_expired.verification_code
         response = c.post('/auth/phone_auth/3/verify', {"verification_code": verification_code})
         self.assertEqual(response.status_code, 400)
         self.assertEqual(response.json()['msg'], i18n['resp_msg']['invalid_verification'])
