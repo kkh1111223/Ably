@@ -18,6 +18,7 @@ class Migration(migrations.Migration):
                 ('phone_number', models.CharField(max_length=11)),
                 ('verification_code', models.CharField(max_length=6)),
                 ('trial', models.IntegerField(default=0)),
+                ('revoked', models.BooleanField(default=False)),
             ],
             options={
                 'db_table': 'phone_auth',
