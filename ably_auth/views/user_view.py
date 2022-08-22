@@ -24,11 +24,15 @@ class UserViewSet(viewsets.GenericViewSet,
         return [permission() for permission in self.permission_classes]
 
     def create(self, request, *args, **kwargs):
-        return Response({},
+        # 필수항목 검사
+        User.objects.create_user(**request.data)
+        return Response({"status": "success"},
                         status=status.HTTP_201_CREATED)
 
     def retrieve(self, request, *args, **kwargs):
-        return Response({},
+        user_instance = self.get_object()
+        serializer = self.get_serializer(user_instance)
+        return Response({"status": "success", **serializer.data},
                         status=status.HTTP_200_OK)
 
     @action(methods=['post'], detail=True, url_path='reset_password', url_name='reset_password')
