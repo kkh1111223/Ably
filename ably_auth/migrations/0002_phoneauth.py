@@ -17,7 +17,7 @@ class Migration(migrations.Migration):
                 ('created_time', models.DateTimeField(auto_now_add=True)),
                 ('phone_number', models.CharField(max_length=11)),
                 ('verification_code', models.CharField(max_length=6)),
-                ('trial', models.IntegerField(default=0)),
+                ('trial', models.IntegerField(default=3)),
                 ('revoked', models.BooleanField(default=False)),
             ],
             options={
