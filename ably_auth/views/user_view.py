@@ -1,9 +1,12 @@
 from rest_framework import mixins, status, viewsets
-from rest_framework.decorators import action, permission_classes
+from rest_framework.decorators import action, permission_classes, authentication_classes
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
+from rest_framework_simplejwt.authentication import JWTAuthentication
+
 
 from django.contrib.auth import get_user_model
+from django.contrib.sessions.backends.db import SessionStore
 
 from ably_auth.biz import user_biz
 from ably_auth.serializers import user_serializer
@@ -17,7 +20,7 @@ class UserViewSet(viewsets.GenericViewSet,
     serializer_class = user_serializer.UserSerializer
 
     def get_permissions(self):
-        if self.action == 'create':
+        if self.action in ('create', 'reset_password'):
             self.permission_classes = []
         else:
             self.permission_classes = [IsAuthenticated]
@@ -31,8 +34,8 @@ class UserViewSet(viewsets.GenericViewSet,
 
     @action(methods=['get'], detail=True, url_path='my', url_name='my')
     def my_info(self, request, pk=None):
-        is_valid_access = user_biz.compare_user_id(self.request.auth, pk)
-        if not is_valid_access:
+        has_perm = user_biz.compare_user_id(self.request.auth, pk)
+        if not has_perm:
             return Response({"status": "failure"},
                             status=status.HTTP_403_FORBIDDEN)
         user_instance = self.get_object()
@@ -40,8 +43,14 @@ class UserViewSet(viewsets.GenericViewSet,
         return Response({"status": "success", **serializer.data},
                         status=status.HTTP_200_OK)
 
-    @action(methods=['post'], detail=True, url_path='reset_password', url_name='reset_password')
-    @permission_classes([])
+    @action(methods=['post'], detail=True, authentication_classes=[],
+            url_path='reset_password', url_name='reset_password')
     def reset_password(self, request, pk=None):
+        # 핸드폰 번호에 해당 유저 유효성 검사
+        s = SessionStore(session_key=self.request.data.get('session_key'))
+        u = User.objects.get(id=pk)
+        u.set_password('1234')
+        u.save()
+        s.delete()
         return Response({},
                         status=status.HTTP_200_OK)
