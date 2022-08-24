@@ -1,9 +1,7 @@
 from rest_framework import mixins, status, viewsets
-from rest_framework.decorators import action, permission_classes, authentication_classes
+from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
-from rest_framework_simplejwt.authentication import JWTAuthentication
-
 
 from django.contrib.auth import get_user_model
 from django.contrib.auth import settings
