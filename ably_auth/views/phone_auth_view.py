@@ -39,7 +39,5 @@ class PhoneAuthViewSet(viewsets.GenericViewSet,
             return Response({"status": "fail", "msg": msg},
                             status=status.HTTP_400_BAD_REQUEST)
 
-        request.session.save()
-
         return Response({"status": "success", "session_key": request.session.session_key},
                         status=status.HTTP_200_OK)

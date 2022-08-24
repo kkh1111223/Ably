@@ -57,6 +57,7 @@ def verify_phone_authentication(request: Request, phone_auth_instance: Type[Phon
         return False, i18n['resp_msg']['invalid_verification']
 
     if verification_code == phone_auth_instance.verification_code:
+        request.session.save(must_create=True)
         phone_auth_instance.revoked = True
         phone_auth_instance.save()
         return True, ""

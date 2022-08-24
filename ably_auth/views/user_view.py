@@ -6,9 +6,9 @@ from rest_framework_simplejwt.authentication import JWTAuthentication
 
 
 from django.contrib.auth import get_user_model
-from django.contrib.sessions.backends.db import SessionStore
+from django.contrib.sessions.models import Session
 
-from ably_auth.biz import user_biz
+from ably_auth.biz import user_biz, session_biz
 from ably_auth.serializers import user_serializer
 
 User = get_user_model()
@@ -27,8 +27,14 @@ class UserViewSet(viewsets.GenericViewSet,
         return [permission() for permission in self.permission_classes]
 
     def create(self, request, *args, **kwargs):
-        # 필수항목 검사
+        session = session_biz.validate_session(self.request.data.get('session_key'))
+        if not session:
+            return Response({"status": "failure"},
+                            status=status.HTTP_403_FORBIDDEN)
+
         User.objects.create_user(**request.data)
+
+        session.delete()
         return Response({"status": "success"},
                         status=status.HTTP_201_CREATED)
 
@@ -47,10 +53,14 @@ class UserViewSet(viewsets.GenericViewSet,
             url_path='reset_password', url_name='reset_password')
     def reset_password(self, request, pk=None):
         # 핸드폰 번호에 해당 유저 유효성 검사
-        s = SessionStore(session_key=self.request.data.get('session_key'))
+        session = session_biz.validate_session(self.request.data.get('session_key'))
+        if not session:
+            return Response({"status": "failure"},
+                            status=status.HTTP_403_FORBIDDEN)
+
         u = User.objects.get(id=pk)
-        u.set_password('1234')
+        u.set_password('123')
         u.save()
-        s.delete()
+        session.delete()
         return Response({},
                         status=status.HTTP_200_OK)
