@@ -17,7 +17,7 @@ def compare_user_id(token: str, user_id: str) -> bool:
 
 
 def check_create_request_data(request: Request) -> (bool, str):
-    mandatory_data = ['username', 'password', 'nickname', 'email', 'mobile_phone', 'name']
+    mandatory_data = ['username', 'password', 'nickname', 'email', 'mobile_phone', 'first_name', 'last_name']
     restricted_data = ['is_staff', 'is_superuser']
     if [i for i in mandatory_data if i not in request.data.keys()] \
             or [i for i in restricted_data if i in request.data.keys()]:
