@@ -6,12 +6,14 @@ from rest_framework_simplejwt.authentication import JWTAuthentication
 
 
 from django.contrib.auth import get_user_model
-from django.contrib.sessions.models import Session
+from django.contrib.auth import settings
+from django.db.utils import IntegrityError
 
 from ably_auth.biz import user_biz, session_biz
 from ably_auth.serializers import user_serializer
 
 User = get_user_model()
+i18n = settings.I18N
 
 
 class UserViewSet(viewsets.GenericViewSet,
@@ -32,7 +34,15 @@ class UserViewSet(viewsets.GenericViewSet,
             return Response({"status": "failure"},
                             status=status.HTTP_403_FORBIDDEN)
 
-        User.objects.create_user(**request.data)
+        is_data_valid, msg = user_biz.check_create_request_data(request)
+        if not is_data_valid:
+            return Response({"status": "failure", "msg": msg},
+                            status=status.HTTP_400_BAD_REQUEST)
+        try:
+            User.objects.create_user(**request.data, is_staff=False, is_superuser=False)
+        except IntegrityError:
+            return Response({"status": "failure", "msg": i18n['resp_msg']['username_already_exist']},
+                            status=status.HTTP_400_BAD_REQUEST)
 
         session.delete()
         return Response({"status": "success"},
@@ -40,7 +50,7 @@ class UserViewSet(viewsets.GenericViewSet,
 
     @action(methods=['get'], detail=True, url_path='my', url_name='my')
     def my_info(self, request, pk=None):
-        has_perm = user_biz.compare_user_id(self.request.auth, pk)
+        has_perm = user_biz.compare_user_id(request.auth, pk)
         if not has_perm:
             return Response({"status": "failure"},
                             status=status.HTTP_403_FORBIDDEN)
