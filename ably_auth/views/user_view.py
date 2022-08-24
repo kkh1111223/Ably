@@ -59,18 +59,22 @@ class UserViewSet(viewsets.GenericViewSet,
         return Response({"status": "success", **serializer.data},
                         status=status.HTTP_200_OK)
 
-    @action(methods=['post'], detail=True, authentication_classes=[],
+    @action(methods=['post'], detail=False, authentication_classes=[],
             url_path='reset_password', url_name='reset_password')
-    def reset_password(self, request, pk=None):
-        # 핸드폰 번호에 해당 유저 유효성 검사
+    def reset_password(self, request):
         session = session_biz.validate_session(self.request.data.get('session_key'))
         if not session:
             return Response({"status": "failure"},
                             status=status.HTTP_403_FORBIDDEN)
 
-        u = User.objects.get(id=pk)
-        u.set_password('123')
-        u.save()
+        is_data_valid, msg = user_biz.check_reset_password_request_data(request)
+        if not is_data_valid:
+            return Response({"status": "failure", "msg": msg},
+                            status=status.HTTP_400_BAD_REQUEST)
+
+        user = User.objects.get(username=request.data['username'])
+        user.set_password(request.data['password'])
+        user.save()
         session.delete()
-        return Response({},
+        return Response({"status": "success"},
                         status=status.HTTP_200_OK)
