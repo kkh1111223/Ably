@@ -1,3 +1,5 @@
+import json
+
 from rest_framework import mixins, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -37,7 +39,7 @@ class UserViewSet(viewsets.GenericViewSet,
             return Response({"status": "failure", "msg": msg},
                             status=status.HTTP_400_BAD_REQUEST)
         try:
-            User.objects.create_user(**request.data, is_staff=False, is_superuser=False)
+            User.objects.create_user(json.dumps(self.request.data), is_staff=False, is_superuser=False)
         except IntegrityError:
             return Response({"status": "failure", "msg": i18n['resp_msg']['username_already_exist']},
                             status=status.HTTP_400_BAD_REQUEST)
