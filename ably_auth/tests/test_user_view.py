@@ -79,9 +79,9 @@ class UserViewTestClass(TestCase):
 
     def test_create_success(self):
         response = self.c.post('/auth/user', {"username": "create_test4", "password": "123", "nickname": "녜녜니니",
-                                              "mobile_phone": "01000000007", "email": "create_test4@google.com",
+                                              "mobile_phone": "01000000007", "email": "createtest4@google.com",
                                               "session_key": "valid_session", "first_name": "제나", "last_name": "아"})
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 201)
 
     def test_reset_password_no_session_key(self):
         response = self.c.post('/auth/user/reset_password',
@@ -95,7 +95,10 @@ class UserViewTestClass(TestCase):
         self.assertEqual(response.json()['msg'], i18n['resp_msg']['no_mandatory_data'])
 
     def test_reset_password_user_phone_not_match(self):
-        pass
+        response = self.c.post('/auth/user/reset_password',
+                               {"username": "normal_two", "session_key": "valid_session",
+                                "mobile_phone": "01012341234", "password": "112233"})
+        self.assertEqual(response.status_code, 400)
 
     def test_reset_password_success(self):
         response = self.c.post('/auth/user/reset_password',
